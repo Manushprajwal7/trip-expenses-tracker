@@ -1,52 +1,51 @@
 "use client"
 
-import { useState, useEffect, useRef } from 'react'
-import { useParams } from 'next/navigation'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { useToast } from '@/components/ui/use-toast'
-import { motion } from 'framer-motion'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { ShareTrip } from '@/components/share-trip'
-import { RecurringExpenseForm } from '@/components/recurring-expense-form'
-import { ExpenseCategoryManager } from '@/components/expense-category-manager'
+import { useState, useEffect, useRef } from "react"
+import { useParams } from "next/navigation"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { useToast } from "@/components/ui/use-toast"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { ShareTrip } from "@/components/share-trip"
+import { RecurringExpenseForm } from "@/components/recurring-expense-form"
+import { ExpenseCategoryManager } from "@/components/expense-category-manager"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Group, Trip, Expense, RecurringExpense, ExchangeRate, Member } from '@/types/trip'
-import { jsPDF } from 'jspdf'
-import 'jspdf-autotable'
-import { CSVLink } from 'react-csv'
-import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts'
+import type { Group, Trip, Expense, RecurringExpense, ExchangeRate, Member } from "@/types/trip"
+import { jsPDF } from "jspdf"
+import "jspdf-autotable"
+import { CSVLink } from "react-csv"
+import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from "recharts"
 import { Checkbox } from "@/components/ui/checkbox"
 
 export default function TripDetailsPage() {
   const { id } = useParams()
   const [trip, setTrip] = useState<Trip | null>(null)
   const [loading, setLoading] = useState(true)
-  const [expenseName, setExpenseName] = useState('')
-  const [expenseAmount, setExpenseAmount] = useState('')
-  const [expenseCurrency, setExpenseCurrency] = useState('USD')
-  const [expenseCategory, setExpenseCategory] = useState('')
-  const [paidBy, setPaidBy] = useState('')
+  const [expenseName, setExpenseName] = useState("")
+  const [expenseAmount, setExpenseAmount] = useState("")
+  const [expenseCurrency, setExpenseCurrency] = useState("USD")
+  const [expenseCategory, setExpenseCategory] = useState("")
+  const [paidBy, setPaidBy] = useState("")
   const [splitAmong, setSplitAmong] = useState<string[]>([])
   const [currentUser, setCurrentUser] = useState<Member | null>(null)
   const [groups, setGroups] = useState<Group[]>([])
   const [exchangeRates, setExchangeRates] = useState<ExchangeRate[]>([])
-  const [filterCategory, setFilterCategory] = useState('')
-  const [filterDateFrom, setFilterDateFrom] = useState('')
-  const [filterDateTo, setFilterDateTo] = useState('')
+  const [filterCategory, setFilterCategory] = useState("")
+  const [filterDateFrom, setFilterDateFrom] = useState("")
+  const [filterDateTo, setFilterDateTo] = useState("")
   const [splitAmongAllExceptPayer, setSplitAmongAllExceptPayer] = useState(false)
   const { toast } = useToast()
 
   useEffect(() => {
     const fetchTripData = () => {
-      const trips = JSON.parse(localStorage.getItem('trips') || '[]')
+      const trips = JSON.parse(localStorage.getItem("trips") || "[]")
       const currentTrip = trips.find((t: Trip) => t.id === Number(id))
       if (currentTrip) {
         if (!currentTrip.expenseCategories) {
-          currentTrip.expenseCategories = ['Food', 'Transportation', 'Accommodation', 'Activities', 'Other']
+          currentTrip.expenseCategories = ["Food", "Transportation", "Accommodation", "Activities", "Other"]
         }
         setTrip(currentTrip)
         if (currentTrip.members.length > 0) {
@@ -54,10 +53,10 @@ export default function TripDetailsPage() {
         }
       }
 
-      const storedGroups = JSON.parse(localStorage.getItem('groups') || '[]')
+      const storedGroups = JSON.parse(localStorage.getItem("groups") || "[]")
       setGroups(storedGroups)
 
-      const storedExchangeRates = JSON.parse(localStorage.getItem('exchangeRates') || '[]')
+      const storedExchangeRates = JSON.parse(localStorage.getItem("exchangeRates") || "[]")
       setExchangeRates(storedExchangeRates)
 
       setLoading(false)
@@ -69,7 +68,13 @@ export default function TripDetailsPage() {
   const handleAddExpense = () => {
     if (!trip) return
 
-    if (!expenseName || !expenseAmount || !paidBy || (!splitAmong.length && !splitAmongAllExceptPayer) || !expenseCategory) {
+    if (
+      !expenseName ||
+      !expenseAmount ||
+      !paidBy ||
+      (!splitAmong.length && !splitAmongAllExceptPayer) ||
+      !expenseCategory
+    ) {
       toast({
         title: "Error",
         description: "Please fill in all fields",
@@ -79,13 +84,13 @@ export default function TripDetailsPage() {
     }
 
     const splitAmongMembers = splitAmongAllExceptPayer
-      ? trip.members.filter(member => member.name !== paidBy).map(member => member.name)
+      ? trip.members.filter((member) => member.name !== paidBy).map((member) => member.name)
       : splitAmong
 
     const newExpense: Expense = {
       id: Date.now(),
       name: expenseName,
-      amount: parseFloat(expenseAmount),
+      amount: Number.parseFloat(expenseAmount),
       currency: expenseCurrency,
       paidBy,
       splitAmong: splitAmongMembers,
@@ -97,11 +102,11 @@ export default function TripDetailsPage() {
     updateTripInStorage(updatedTrip)
 
     setTrip(updatedTrip)
-    setExpenseName('')
-    setExpenseAmount('')
-    setExpenseCurrency('USD')
-    setExpenseCategory('')
-    setPaidBy('')
+    setExpenseName("")
+    setExpenseAmount("")
+    setExpenseCurrency("USD")
+    setExpenseCategory("")
+    setPaidBy("")
     setSplitAmong([])
     setSplitAmongAllExceptPayer(false)
 
@@ -125,7 +130,7 @@ export default function TripDetailsPage() {
   const handleDeleteExpense = (expenseId: number) => {
     if (!trip) return
 
-    const updatedExpenses = trip.expenses.filter(expense => expense.id !== expenseId)
+    const updatedExpenses = trip.expenses.filter((expense) => expense.id !== expenseId)
     const updatedTrip = { ...trip, expenses: updatedExpenses }
     updateTripInStorage(updatedTrip)
     setTrip(updatedTrip)
@@ -139,7 +144,7 @@ export default function TripDetailsPage() {
   const handleDeleteRecurringExpense = (expenseId: number) => {
     if (!trip) return
 
-    const updatedRecurringExpenses = trip.recurringExpenses.filter(expense => expense.id !== expenseId)
+    const updatedRecurringExpenses = trip.recurringExpenses.filter((expense) => expense.id !== expenseId)
     const updatedTrip = { ...trip, recurringExpenses: updatedRecurringExpenses }
     updateTripInStorage(updatedTrip)
     setTrip(updatedTrip)
@@ -151,51 +156,57 @@ export default function TripDetailsPage() {
   }
 
   const updateTripInStorage = (updatedTrip: Trip) => {
-    const trips = JSON.parse(localStorage.getItem('trips') || '[]')
-    const updatedTrips = trips.map((t: Trip) => t.id === updatedTrip.id ? updatedTrip : t)
-    localStorage.setItem('trips', JSON.stringify(updatedTrips))
+    const trips = JSON.parse(localStorage.getItem("trips") || "[]")
+    const updatedTrips = trips.map((t: Trip) => (t.id === updatedTrip.id ? updatedTrip : t))
+    localStorage.setItem("trips", JSON.stringify(updatedTrips))
   }
 
   const handleShare = () => {
     if (!trip) return
 
     const tripSummary = `Trip: ${trip.name}
-Budget: ${trip.budget ? `${trip.budgetCurrency} ${trip.budget.toFixed(2)}` : 'Not set'}
-Members: ${trip.members.map(m => m.name).join(', ')}
+Budget: ${trip.budget ? `${trip.budgetCurrency} ${trip.budget.toFixed(2)}` : "Not set"}
+Members: ${trip.members.map((m) => m.name).join(", ")}
 Total Expenses: ${trip.budgetCurrency} ${totalExpenses.toFixed(2)}`
 
     if (navigator.share) {
-      navigator.share({
-        title: `Trip Summary: ${trip.name}`,
-        text: tripSummary,
-      }).then(() => {
-        toast({
-          title: "Success",
-          description: "Trip summary shared successfully",
+      navigator
+        .share({
+          title: `Trip Summary: ${trip.name}`,
+          text: tripSummary,
         })
-      }).catch((error) => {
-        console.error('Error sharing:', error)
-        fallbackShare(tripSummary)
-      })
+        .then(() => {
+          toast({
+            title: "Success",
+            description: "Trip summary shared successfully",
+          })
+        })
+        .catch((error) => {
+          console.error("Error sharing:", error)
+          fallbackShare(tripSummary)
+        })
     } else {
       fallbackShare(tripSummary)
     }
   }
 
   const fallbackShare = (text: string) => {
-    navigator.clipboard.writeText(text).then(() => {
-      toast({
-        title: "Success",
-        description: "Trip summary copied to clipboard. You can now paste and share it.",
+    navigator.clipboard
+      .writeText(text)
+      .then(() => {
+        toast({
+          title: "Success",
+          description: "Trip summary copied to clipboard. You can now paste and share it.",
+        })
       })
-    }).catch((error) => {
-      console.error('Error copying to clipboard:', error)
-      toast({
-        title: "Error",
-        description: "Failed to copy trip summary. Please try again.",
-        variant: "destructive",
+      .catch((error) => {
+        console.error("Error copying to clipboard:", error)
+        toast({
+          title: "Error",
+          description: "Failed to copy trip summary. Please try again.",
+          variant: "destructive",
+        })
       })
-    })
   }
 
   const handleCategoriesChange = (newCategories: string[]) => {
@@ -209,28 +220,28 @@ Total Expenses: ${trip.budgetCurrency} ${totalExpenses.toFixed(2)}`
   const handleChangeGroup = (groupId: string) => {
     if (!trip) return
 
-    const updatedTrip = { ...trip, group: groupId === "no-group" ? null : parseInt(groupId) };
-    updateTripInStorage(updatedTrip);
-    setTrip(updatedTrip);
+    const updatedTrip = { ...trip, group: groupId === "no-group" ? null : Number.parseInt(groupId) }
+    updateTripInStorage(updatedTrip)
+    setTrip(updatedTrip)
 
     toast({
       title: "Success",
       description: "Trip group updated successfully",
-    });
-  };
+    })
+  }
 
   const convertCurrency = (amount: number, fromCurrency: string, toCurrency: string): number => {
     if (fromCurrency === toCurrency) return amount
 
-    const directRate = exchangeRates.find(rate => rate.from === fromCurrency && rate.to === toCurrency)
+    const directRate = exchangeRates.find((rate) => rate.from === fromCurrency && rate.to === toCurrency)
     if (directRate) return amount * directRate.rate
 
-    const inverseRate = exchangeRates.find(rate => rate.from === toCurrency && rate.to === fromCurrency)
+    const inverseRate = exchangeRates.find((rate) => rate.from === toCurrency && rate.to === fromCurrency)
     if (inverseRate) return amount / inverseRate.rate
 
     // If no direct or inverse rate, try to convert through USD
-    const fromToUSD = exchangeRates.find(rate => rate.from === fromCurrency && rate.to === 'USD')
-    const usdToTarget = exchangeRates.find(rate => rate.from === 'USD' && rate.to === toCurrency)
+    const fromToUSD = exchangeRates.find((rate) => rate.from === fromCurrency && rate.to === "USD")
+    const usdToTarget = exchangeRates.find((rate) => rate.from === "USD" && rate.to === toCurrency)
     if (fromToUSD && usdToTarget) {
       return amount * fromToUSD.rate * usdToTarget.rate
     }
@@ -246,27 +257,27 @@ Total Expenses: ${trip.budgetCurrency} ${totalExpenses.toFixed(2)}`
     const doc = new jsPDF()
     doc.setFontSize(18)
     doc.text(`Trip Report: ${trip.name}`, 14, 22)
-    
+
     doc.setFontSize(12)
-    doc.text(`Total Budget: ${trip.budgetCurrency} ${trip.budget?.toFixed(2) || 'Not set'}`, 14, 32)
+    doc.text(`Total Budget: ${trip.budgetCurrency} ${trip.budget?.toFixed(2) || "Not set"}`, 14, 32)
     doc.text(`Total Expenses: ${trip.budgetCurrency} ${totalExpenses.toFixed(2)}`, 14, 40)
-    
+
     if (remainingBudget !== null) {
       doc.text(`Remaining Budget: ${trip.budgetCurrency} ${remainingBudget.toFixed(2)}`, 14, 48)
     }
 
     doc.autoTable({
-      head: [['Name', 'Amount', 'Currency', 'Category', 'Paid By', 'Split Among', 'Date']],
-      body: trip.expenses.map(expense => [
+      head: [["Name", "Amount", "Currency", "Category", "Paid By", "Split Among", "Date"]],
+      body: trip.expenses.map((expense) => [
         expense.name,
         expense.amount.toFixed(2),
         expense.currency,
         expense.category,
         expense.paidBy,
-        expense.splitAmong.join(', '),
-        new Date(expense.date).toLocaleDateString()
+        expense.splitAmong.join(", "),
+        new Date(expense.date).toLocaleDateString(),
       ]),
-      startY: 60
+      startY: 60,
     })
 
     doc.save(`${trip.name}_report.pdf`)
@@ -276,16 +287,16 @@ Total Expenses: ${trip.budgetCurrency} ${totalExpenses.toFixed(2)}`
     if (!trip) return
 
     const csvData = [
-      ['Name', 'Amount', 'Currency', 'Category', 'Paid By', 'Split Among', 'Date'],
-      ...trip.expenses.map(expense => [
+      ["Name", "Amount", "Currency", "Category", "Paid By", "Split Among", "Date"],
+      ...trip.expenses.map((expense) => [
         expense.name,
         expense.amount.toFixed(2),
         expense.currency,
         expense.category,
         expense.paidBy,
-        expense.splitAmong.join(', '),
-        new Date(expense.date).toLocaleDateString()
-      ])
+        expense.splitAmong.join(", "),
+        new Date(expense.date).toLocaleDateString(),
+      ]),
     ]
 
     return csvData
@@ -293,12 +304,16 @@ Total Expenses: ${trip.budgetCurrency} ${totalExpenses.toFixed(2)}`
 
   const chartRef = useRef(null)
 
-  const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8', '#FF6B6B']
+  const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#8884D8", "#FF6B6B"]
 
-  const expensesByCategory = trip?.expenses.reduce((acc, expense) => {
-    acc[expense.category] = (acc[expense.category] || 0) + expense.amount
-    return acc
-  }, {} as Record<string, number>) || {}
+  const expensesByCategory =
+    trip?.expenses.reduce(
+      (acc, expense) => {
+        acc[expense.category] = (acc[expense.category] || 0) + expense.amount
+        return acc
+      },
+      {} as Record<string, number>,
+    ) || {}
 
   const pieChartData = Object.entries(expensesByCategory).map(([name, value]) => ({ name, value }))
 
@@ -319,13 +334,13 @@ Total Expenses: ${trip.budgetCurrency} ${totalExpenses.toFixed(2)}`
 
   const calculateBalances = () => {
     const balances: { [key: string]: number } = {}
-    trip.members.forEach(member => balances[member.name] = 0)
+    trip.members.forEach((member) => (balances[member.name] = 0))
 
-    trip.expenses.forEach(expense => {
+    trip.expenses.forEach((expense) => {
       const convertedAmount = convertCurrency(expense.amount, expense.currency, trip.budgetCurrency)
       balances[expense.paidBy] += convertedAmount
       const splitAmount = convertedAmount / expense.splitAmong.length
-      expense.splitAmong.forEach(member => {
+      expense.splitAmong.forEach((member) => {
         balances[member] -= splitAmount
       })
     })
@@ -335,12 +350,13 @@ Total Expenses: ${trip.budgetCurrency} ${totalExpenses.toFixed(2)}`
 
   const balances = calculateBalances()
 
-  const isOrganizer = currentUser?.role === 'organizer'
+  const isOrganizer = currentUser?.role === "organizer"
 
-  const filteredExpenses = trip.expenses.filter(expense => {
+  const filteredExpenses = trip.expenses.filter((expense) => {
     const categoryMatch = !filterCategory || expense.category === filterCategory
-    const dateMatch = (!filterDateFrom || new Date(expense.date) >= new Date(filterDateFrom)) &&
-                      (!filterDateTo || new Date(expense.date) <= new Date(filterDateTo))
+    const dateMatch =
+      (!filterDateFrom || new Date(expense.date) >= new Date(filterDateFrom)) &&
+      (!filterDateTo || new Date(expense.date) <= new Date(filterDateTo))
     return categoryMatch && dateMatch
   })
 
@@ -360,7 +376,9 @@ Total Expenses: ${trip.budgetCurrency} ${totalExpenses.toFixed(2)}`
       const [creditor, creditAmount] = sortedBalances[j]
 
       if (Math.abs(debtAmount) < creditAmount) {
-        suggestions.push(`${debtor} should pay ${trip.budgetCurrency} ${Math.abs(debtAmount).toFixed(2)} to ${creditor}`)
+        suggestions.push(
+          `${debtor} should pay ${trip.budgetCurrency} ${Math.abs(debtAmount).toFixed(2)} to ${creditor}`,
+        )
         sortedBalances[j] = [creditor, creditAmount + debtAmount]
         i++
       } else {
@@ -458,35 +476,76 @@ Total Expenses: ${trip.budgetCurrency} ${totalExpenses.toFixed(2)}`
                   </div>
                   <div>
                     <Label htmlFor="splitAmong">Split Among</Label>
-                    <Select
-                      onValueChange={(value) => setSplitAmong(value.split(','))}
-                      value={splitAmong.join(',')}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select members" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {trip.members.map((member) => (
-                          <SelectItem key={member.name} value={member.name}>
-                            {member.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <div className="text-sm text-muted-foreground mb-2">
+                      Select multiple people to split the expense equally
+                    </div>
+
+                    {/* Multiple selection checkboxes for each member */}
+                    <div className="space-y-2 border rounded-md p-3">
+                      {trip.members.map((member) => (
+                        <div key={member.name} className="flex items-center space-x-2">
+                          <Checkbox
+                            id={`member-${member.name}`}
+                            checked={splitAmong.includes(member.name)}
+                            onCheckedChange={(checked) => {
+                              if (checked) {
+                                setSplitAmong([...splitAmong, member.name])
+                              } else {
+                                setSplitAmong(splitAmong.filter((name) => name !== member.name))
+                              }
+                            }}
+                          />
+                          <Label htmlFor={`member-${member.name}`}>{member.name}</Label>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Display selected members and per-person amount */}
+                    {splitAmong.length > 0 && (
+                      <div className="mt-2 p-2 bg-muted rounded-md">
+                        <p className="text-sm font-medium">Selected members ({splitAmong.length}):</p>
+                        <p className="text-sm">{splitAmong.join(", ")}</p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Amount per person:{" "}
+                          {expenseAmount
+                            ? `${expenseCurrency} ${(Number.parseFloat(expenseAmount) / splitAmong.length).toFixed(2)}`
+                            : "-"}
+                        </p>
+                      </div>
+                    )}
+
+                    {/* Quick selection options */}
+                    <div className="flex flex-col space-y-2 mt-3">
+                      <div className="flex items-center space-x-2">
+                        <Checkbox
+                          id="splitAmongAllExceptPayer"
+                          checked={splitAmongAllExceptPayer}
+                          onCheckedChange={(checked) => {
+                            setSplitAmongAllExceptPayer(checked as boolean)
+                            if (checked && paidBy) {
+                              setSplitAmong(
+                                trip.members.filter((member) => member.name !== paidBy).map((member) => member.name),
+                              )
+                            }
+                          }}
+                        />
+                        <Label htmlFor="splitAmongAllExceptPayer">Split among all except payer</Label>
+                      </div>
+
+                      <div className="flex items-center space-x-2">
+                        <Checkbox
+                          id="splitAmongEveryone"
+                          onCheckedChange={(checked) => {
+                            if (checked) {
+                              setSplitAmong(trip.members.map((member) => member.name))
+                            }
+                          }}
+                        />
+                        <Label htmlFor="splitAmongEveryone">Split among everyone equally</Label>
+                      </div>
+                    </div>
                   </div>
-                  <div className="flex items-center space-x-2 mt-2">
-                    <Checkbox
-                      id="splitAmongAllExceptPayer"
-                      checked={splitAmongAllExceptPayer}
-                      onCheckedChange={(checked) => {
-                        setSplitAmongAllExceptPayer(checked as boolean)
-                        if (checked) {
-                          setSplitAmong(trip.members.filter(member => member.name !== paidBy).map(member => member.name))
-                        }
-                      }}
-                    />
-                    <Label htmlFor="splitAmongAllExceptPayer">Split among all except payer</Label>
-                  </div>
+
                   <Button onClick={handleAddExpense}>Add Expense</Button>
                 </div>
               </TabsContent>
@@ -505,17 +564,19 @@ Total Expenses: ${trip.budgetCurrency} ${totalExpenses.toFixed(2)}`
             <CardTitle>Summary</CardTitle>
           </CardHeader>
           <CardContent>
-            <p>Total Budget: {trip.budget ? `${trip.budgetCurrency} ${trip.budget.toFixed(2)}` : 'Not set'}</p>
-            <p>Total Expenses: {trip.budgetCurrency} {totalExpenses.toFixed(2)}</p>
+            <p>Total Budget: {trip.budget ? `${trip.budgetCurrency} ${trip.budget.toFixed(2)}` : "Not set"}</p>
+            <p>
+              Total Expenses: {trip.budgetCurrency} {totalExpenses.toFixed(2)}
+            </p>
             {remainingBudget !== null && (
-              <p className={remainingBudget < 0 ? 'text-red-500' : 'text-green-500'}>
+              <p className={remainingBudget < 0 ? "text-red-500" : "text-green-500"}>
                 Remaining Budget: {trip.budgetCurrency} {remainingBudget.toFixed(2)}
               </p>
             )}
             <h3 className="text-lg font-semibold mt-4 mb-2">Individual Balances</h3>
             <ul>
               {Object.entries(balances).map(([member, balance]) => (
-                <li key={member} className={balance < 0 ? 'text-red-500' : 'text-green-500'}>
+                <li key={member} className={balance < 0 ? "text-red-500" : "text-green-500"}>
                   {member}: {trip.budgetCurrency} {balance.toFixed(2)}
                 </li>
               ))}
@@ -586,7 +647,7 @@ Total Expenses: ${trip.budgetCurrency} ${totalExpenses.toFixed(2)}`
           <CardTitle>Expenses by Category</CardTitle>
         </CardHeader>
         <CardContent>
-          <div style={{ width: '100%', height: 300 }}>
+          <div style={{ width: "100%", height: 300 }}>
             <ResponsiveContainer>
               <PieChart ref={chartRef}>
                 <Pie
@@ -689,11 +750,13 @@ Total Expenses: ${trip.budgetCurrency} ${totalExpenses.toFixed(2)}`
                       <TableCell>{expense.currency}</TableCell>
                       <TableCell>{expense.category}</TableCell>
                       <TableCell>{expense.paidBy}</TableCell>
-                      <TableCell>{expense.splitAmong.join(', ')}</TableCell>
+                      <TableCell>{expense.splitAmong.join(", ")}</TableCell>
                       <TableCell>{new Date(expense.date).toLocaleDateString()}</TableCell>
                       {isOrganizer && (
                         <TableCell>
-                          <Button variant="destructive" onClick={() => handleDeleteExpense(expense.id)}>Delete</Button>
+                          <Button variant="destructive" onClick={() => handleDeleteExpense(expense.id)}>
+                            Delete
+                          </Button>
                         </TableCell>
                       )}
                     </TableRow>
@@ -724,10 +787,12 @@ Total Expenses: ${trip.budgetCurrency} ${totalExpenses.toFixed(2)}`
                       <TableCell>{expense.category}</TableCell>
                       <TableCell>{expense.frequency}</TableCell>
                       <TableCell>{expense.paidBy}</TableCell>
-                      <TableCell>{expense.splitAmong.join(', ')}</TableCell>
+                      <TableCell>{expense.splitAmong.join(", ")}</TableCell>
                       {isOrganizer && (
                         <TableCell>
-                          <Button variant="destructive" onClick={() => handleDeleteRecurringExpense(expense.id)}>Delete</Button>
+                          <Button variant="destructive" onClick={() => handleDeleteRecurringExpense(expense.id)}>
+                            Delete
+                          </Button>
                         </TableCell>
                       )}
                     </TableRow>
@@ -741,4 +806,3 @@ Total Expenses: ${trip.budgetCurrency} ${totalExpenses.toFixed(2)}`
     </div>
   )
 }
-
