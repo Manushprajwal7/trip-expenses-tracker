@@ -1,36 +1,119 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🌍 Trip Expenses Tracker
 
-## Getting Started
+A **Trip Expenses Tracker** built with **Next.js** to help you manage and split travel costs with friends, family, or colleagues during trips.
 
-First, run the development server:
+🌐 [Live Demo →](https://trip-expens-tracker.vercel.app/)
+
+---
+
+## 🧭 Overview
+
+Keeping track of shared expenses on a trip can be tricky. This web app makes it simple to:
+
+- 💸 Add and categorize expenses
+- 👥 Track who paid and who owes what
+- 🧾 Get an overall summary of trip expenses
+- 🔄 Easily split costs among multiple participants
+
+---
+
+## ✨ Features
+
+- ➕ Add/edit/delete trip expenses
+- 🗂️ Categorize by expense type (food, travel, stay, etc.)
+- 👤 Multi-user support for splitting
+- 📊 Summary dashboard
+- 💾 Data persistence with Supabase
+- 🔐 User authentication (optional)
+
+---
+
+## 🧰 Tech Stack
+
+- **Framework:** [Next.js](https://nextjs.org/)
+- **Database:** [Supabase](https://supabase.io/)
+- **Styling:** Tailwind CSS
+- **Hosting:** [Vercel](https://vercel.com/)
+
+---
+
+## 🚀 Getting Started
+
+Follow these steps to set up the project locally.
+
+### 1. Clone the Repository
+
+```bash
+git clone https://github.com/Manushprajwal7/V2-trip-expenses-tracker
+cd trip-expenses-tracker
+```
+
+### 2. Install Dependencies
+
+```bash
+npm install
+# or
+yarn install
+```
+
+### 3. Configure Environment Variables
+
+Create a `.env.local` file and add your Supabase project credentials:
+
+```env
+NEXT_PUBLIC_SUPABASE_URL=your-supabase-url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-supabase-anon-key
+```
+
+> You can find these credentials in your Supabase project dashboard under API settings.
+
+### 4. Start the Development Server
 
 ```bash
 npm run dev
 # or
 yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 📁 Project Structure
 
-## Learn More
+```
+.
+├── components/       # Reusable UI components
+├── pages/            # Application routes
+├── lib/              # Supabase client setup
+├── styles/           # Tailwind or global styles
+├── utils/            # Utility functions
+├── .env.local        # Environment variables
+└── README.md
+```
 
-To learn more about Next.js, take a look at the following resources:
+---
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 🛠️ Contributing
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Want to improve the app or fix a bug? Contributions are welcome!
 
-## Deploy on Vercel
+1. Fork this repo
+2. Create a new branch (`git checkout -b feature/your-feature`)
+3. Commit your changes
+4. Push to the branch
+5. Create a Pull Request
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+---
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+
+## 🙌 Acknowledgements
+
+- [Next.js](https://nextjs.org/)
+- [Supabase](https://supabase.io/)
+- [Tailwind CSS](https://tailwindcss.com/)
+
+---
+
+### ✈️ Built to make trips more enjoyable by eliminating expense confusion.
